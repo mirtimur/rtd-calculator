@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link rel="stylesheet" href="style.css" type="text/css">
+  <title>Калькулятор для расчета параметров термометров сопротивления</title>
+</head>
+
+<body>
+  <main>
+    <div class="wrapper">
+      <h1 class="header">Калькулятор для расчета параметров термометров сопротивления</h1>
+      <form>
+        <label for="filterType">Выберите модель RTd:</label>
+        <select id="filterType" name="filterType">
+          <option value="PT100">PT100</option>
+          <option value="PT10">PT10</option>
+          <option value="PT50">PT50</option>
+          <option value="PT500">PT500</option>
+          <option value="PT1000">PT1000</option>
+          <option value="PT1000">PT5000</option>
+          <option value="PT1000">PT10000</option>
+        </select>
+
+        <label for="temperatureCoefficient">Выберите температурный коэффициент:</label>
+        <select id="temperatureCoefficient" name="temperatureCoefficient">
+          <option value="0.00385">α = 0.00385</option>
+          <option value="0.00391">α = 0.00391</option>
+        </select>
+
+        <label for="fieldResistance">Сопротивление: (Ω)</label>
+        <input type="text" id="fieldResistance" name="fieldResistance" step="0.01">
+
+        <label for="fieldCelsius">Температура: (°C)</label>
+        <input type="text" id="fieldCelsius" name="fieldCelsius" step="0.01">
+
+        <label for="fieldFahrenheit">Температура: (°F)</label>
+        <input type="text" id="fieldFahrenheit" name="fieldFahrenheit" step="0.01">
+
+        <label for="fieldKelvin">Температура: (°K)</label>
+        <input type="text" id="fieldKelvin" name="fieldKelvin" step="0.01">
+
+        <div>
+          <input class="input_submit" type="submit" value="Submit">
+          <input class="input_reset" type="reset" value="Reset" onclick="this.form.reset();">
+        </div>
+
+      </form>
+    </div>
+  </main>
+
+
+  <script src="script.js"></script>
+</body>
+
+</html>
