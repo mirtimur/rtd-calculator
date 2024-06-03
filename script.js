@@ -1,87 +1,169 @@
-function calculateTemperature() {
-  const filterType = document.querySelector("#filterType").value;
-  const temperatureCoefficient = Number(
-    document.querySelector("#temperatureCoefficient").value
-  );
-  const resistance = Number(document.querySelector("#fieldResistance").value);
-
-  if (typeof resistance !== "number" || resistance <= 0) {
-    return "Неверное значение сопротивления";
-  }
-
-  // Вычисляем сопротивление при 0 °C
-  const R0 = Number(filterType.slice(2));
-
-  // Определяем коэффициенты A и B в зависимости от типа термометра
-  let A, B;
-  switch (temperatureCoefficient) {
-    case 0.00385:
-      A = 3.9083e-3;
-      B = -5.775e-7;
-      break;
-    case 0.00391:
-      A = 3.969e-3;
-      B = -5.841e-7;
-      break;
-    default:
-      return "Неверное значение коэффициента температуры";
-  }
-
-  // Решаем уравнение для нахождения температуры
-  const temperature =
-    (-R0 * A + Math.sqrt(R0 * R0 * A * A - 4 * R0 * B * (R0 - resistance))) /
-    (2 * R0 * B);
-
-  return Math.round(temperature * 10) / 10;
-}
-
 function calculateResistance() {
   const filterType = document.querySelector("#filterType").value;
-  const temperatureCoefficient = Number(
-    document.querySelector("#temperatureCoefficient").value
-  );
   const temperature = Number(document.querySelector("#fieldCelsius").value);
+  const resistanceZero = Number(
+    document.querySelector("#fieldResistanceZero").value
+  );
 
   if (typeof temperature !== "number" || !temperature) {
     return "Неверное значение температуры";
   }
 
-  // Вычисляем сопротивление при 0 °C
-  const R0 = Number(filterType.slice(2));
+  if (filterType === "CU") {
+    let A, B, C;
+    A = 4.28e-3;
+    B = -6.2032e-7;
+    C = 8.5154e-12;
 
-  // Определяем коэффициенты A, B и C в зависимости от типа термометра
-  let A, B, C;
-  switch (temperatureCoefficient) {
-    case 0.00385:
-      A = 3.9083e-3;
-      B = -5.775e-7;
-      C = -4.183e-12;
-      break;
-    case 0.00391:
-      A = 3.969e-3;
-      B = -5.841e-7;
-      C = -4.33e-12;
-      break;
-    default:
-      return "Неверное значение коэффициента температуры";
+    let resistance;
+    if (temperature >= -180 && temperature < 0) {
+      resistance =
+        resistanceZero *
+        (1 +
+          A * temperature +
+          B * temperature * (temperature + 6.7) +
+          C * Math.pow(temperature, 3));
+    } else if (temperature >= 0 && temperature <= 200) {
+      resistance = resistanceZero * (1 + A * temperature);
+    } else {
+      return "Неверное значение температуры";
+    }
+
+    return Math.round(resistance * 10) / 10;
+  } else if (filterType === "NI") {
+    let A, B, C;
+    A = 5.4963e-3;
+    B = 6.7556e-7;
+    C = -9.2004e-10;
+
+    let resistance;
+    if (temperature >= -60 && temperature < 100) {
+      resistance =
+        resistanceZero * (1 + A * temperature + B * Math.pow(temperature, 2));
+    } else if (temperature >= 100 && temperature <= 180) {
+      resistance =
+        resistanceZero *
+        (1 +
+          A * temperature +
+          B * Math.pow(temperature, 2) +
+          C * (temperature - 100) * Math.pow(temperature, 2));
+    } else {
+      return "Неверное значение температуры";
+    }
+    return Math.round(resistance * 10) / 10;
+  } else if (filterType.includes("PT")) {
+    let A, B, C;
+    switch (filterType) {
+      case "PT385":
+        A = 3.9083e-3;
+        B = -5.775e-7;
+        C = -4.183e-12;
+        break;
+      case "PT391":
+        A = 3.969e-3;
+        B = -5.841e-7;
+        C = -4.33e-12;
+        break;
+      default:
+        return "Неверное значение коэффициента температуры";
+    }
+    let resistance;
+    if (temperature >= -200 && temperature < 0) {
+      resistance =
+        resistanceZero *
+        (1 +
+          A * temperature +
+          B * temperature * temperature +
+          C * (temperature - 100) * temperature * temperature * temperature);
+    } else if (temperature >= 0 && temperature <= 850) {
+      resistance =
+        resistanceZero * (1 + A * temperature + B * temperature * temperature);
+    } else {
+      return "Неверное значение температуры";
+    }
+    return Math.round(resistance * 10) / 10;
   }
+}
 
-  // Вычисляем сопротивление по формуле, в зависимости от диапазона температуры
-  let resistance;
-  if (temperature >= -200 && temperature < 0) {
-    resistance =
-      R0 *
-      (1 +
-        A * temperature +
-        B * temperature * temperature +
-        C * (temperature - 100) * temperature * temperature * temperature);
-  } else if (temperature >= 0 && temperature <= 850) {
-    resistance = R0 * (1 + A * temperature + B * temperature * temperature);
-  } else {
-    return "Неверное значение температуры";
+function calculateTemperature() {
+  const filterType = document.querySelector("#filterType").value;
+  const R0 = Number(document.querySelector("#fieldResistanceZero").value);
+  const resistance = Number(document.querySelector("#fieldResistance").value);
+  if (typeof resistance !== "number" || resistance <= 0) {
+    return "Неверное значение сопротивления";
   }
+  if (filterType === "CU") {
+    let A;
+    A = 4.28e-3;
+    let temperature;
 
-  return Math.round(resistance * 10) / 10;
+    if (resistance / R0 >= 1) {
+      temperature = (resistance / R0 - 1) / A;
+    } else if (resistance / R0 < 1) {
+      const D1 = 233.87;
+      const D2 = 7.937;
+      const D3 = -2.0062;
+      const D4 = -0.3953;
+      const t = resistance / R0 - 1;
+      temperature =
+        D1 * Math.pow(t, 1) +
+        D2 * Math.pow(t, 2) +
+        D3 * Math.pow(t, 3) +
+        D4 * Math.pow(t, 4);
+    } else {
+      return "Вне диапазона";
+    }
+    if (temperature <= -180 || temperature >= 200) {
+      return "Вне диапазона";
+    }
+
+    return Math.round(temperature * 10) / 10;
+  } else if (filterType === "NI") {
+    let A, B;
+    A = 5.4963e-3;
+    B = 6.7556e-6;
+    if (resistance <= R0) {
+      const discriminant = A * A - 4 * B * (1 - resistance / R0);
+      temperature = (-A + Math.sqrt(discriminant)) / (2 * B);
+    } else if (resistance > R0) {
+      const D1 = 144.096;
+      const D2 = -25.502;
+      const D3 = 4.4876;
+
+      const arg = resistance / R0 - 1.6172;
+      temperature =
+        100 +
+        (D1 * Math.pow(arg, 1) + D2 * Math.pow(arg, 2) + D3 * Math.pow(arg, 3));
+    } else {
+      return "Вне диапазона";
+    }
+    if (temperature <= -60 || temperature >= 180) {
+      return "Вне диапазона";
+    }
+
+    return Math.round(temperature * 10) / 10;
+  } else if (filterType.includes("PT")) {
+    let A, B;
+    switch (filterType) {
+      case "PT385":
+        A = 3.9083e-3;
+        B = -5.775e-7;
+        break;
+      case "PT391":
+        A = 3.969e-3;
+        B = -5.841e-7;
+        break;
+      default:
+        return "Неверное значение коэффициента температуры";
+    }
+    const temperature =
+      (-R0 * A + Math.sqrt(R0 * R0 * A * A - 4 * R0 * B * (R0 - resistance))) /
+      (2 * R0 * B);
+    if (temperature <= -200 || temperature >= 850) {
+      return "Вне диапазона";
+    }
+    return Math.round(temperature * 10) / 10;
+  }
 }
 
 function temperatureConverterFromCelsiusToFahrenheit(valNum) {
@@ -119,29 +201,6 @@ function temperatureConverterFromKelvinToCelsius(valNum) {
   document.getElementById("fieldCelsius").value =
     Math.round((valNum - 273.15) * 10) / 10;
 }
-
-// function temperatureConverter(valNum) {
-//   valNum = parseFloat(valNum);
-//   if (document.getElementById("fieldCelsius").value) {
-
-//     document.getElementById("fieldFahrenheit").value =
-//       Math.round((valNum * 1.8 + 32) * 10) / 10;
-//     document.getElementById("fieldKelvin").value =
-//       Math.round((valNum + 273.15) * 10) / 10;
-//   }
-//   if (document.getElementById("fieldFahrenheit").value) {
-//     document.getElementById("fieldCelsius").value =
-//     Math.round(((valNum - 32) / 1.8) * 10) / 10;
-//     document.getElementById("fieldKelvin").value =
-//     Math.round(((valNum - 32) / 1.8 + 273.15) * 10) / 10;
-//   }
-//   if (document.getElementById("fieldKelvin").value) {
-//     document.getElementById("fieldFahrenheit").value =
-//     Math.round(((valNum - 273.15) * 1.8 + 32) * 10) / 10;
-//     document.getElementById("fieldCelsius").value =
-//     Math.round((valNum - 273.15) * 10) / 10;
-//   }
-// }
 
 document.querySelector("form").addEventListener("submit", function (event) {
   event.preventDefault();
