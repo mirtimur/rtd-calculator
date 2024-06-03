@@ -13,20 +13,16 @@
       <form>
         <label for="filterType">Выберите модель RTd:</label>
         <select id="filterType" name="filterType">
-          <option value="PT100">PT100</option>
-          <option value="PT10">PT10</option>
-          <option value="PT50">PT50</option>
-          <option value="PT500">PT500</option>
-          <option value="PT1000">PT1000</option>
-          <option value="PT1000">PT5000</option>
-          <option value="PT1000">PT10000</option>
+          <option value="PT385">Платиновые ТС, α = 0.00385 °С‾¹</option>
+          <option value="PT391">Платиновые ТС, α = 0.00391 °С‾¹</option>
+          <option value="CU">Медные ТС, α = 0.00428 °С‾¹</option>
+          <option value="NI">Никелевые ТС, α = 0.00617 °С‾¹</option>
         </select>
 
-        <label for="temperatureCoefficient">Выберите температурный коэффициент:</label>
-        <select id="temperatureCoefficient" name="temperatureCoefficient">
-          <option value="0.00385">α = 0.00385</option>
-          <option value="0.00391">α = 0.00391</option>
-        </select>
+        <label for="fieldResistanceZero">Сопротивление при 0°С:</label>
+        <input type="number" id="fieldResistanceZero" name="fieldResistanceZero" step="1">
+
+        <h2>=================================</h2>
 
         <label for="fieldResistance">Сопротивление: (Ω)</label>
         <input type="text" id="fieldResistance" name="fieldResistance" step="0.01">
